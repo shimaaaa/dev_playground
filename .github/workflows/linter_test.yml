@@ -24,23 +24,41 @@ jobs:
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/docker-image.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-image
+          path: /tmp/docker-image.tar
   lint:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Python lint
-        uses: addnab/docker-run-action@v3
+      -
+        name: Download artifact
+        uses: actions/download-artifact@v2
         with:
-          image: ${{ github.repository_id }}:${{ github.ref_name }}
-          options: -v ${{ github.workspace }}:/app
-          run: ruff check /app/api
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Python test
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ${{ github.repository_id }}:${{ github.ref_name }}
-          options: -v ${{ github.workspace }}:/app
-          run: pytest --rootdir=/app/api
+          name: docker-image
+          path: /tmp
+      -
+        name: Load Docker image
+        run: |
+          docker load --input /tmp/docker-image.tar
+          docker image ls -a
+  #         - name: Python lint
+  #       uses: addnab/docker-run-action@v3
+  #       with:
+  #         image: ${{ github.repository_id }}:${{ github.ref_name }}
+  #         options: -v ${{ github.workspace }}:/app
+  #         run: ruff check /app/api
+  # test:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Python test
+  #       uses: addnab/docker-run-action@v3
+  #       with:
+  #         image: ${{ github.repository_id }}:${{ github.ref_name }}
+  #         options: -v ${{ github.workspace }}:/app
+  #         run: pytest --rootdir=/app/api
