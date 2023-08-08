@@ -30,3 +30,5 @@ jobs:
           file: ./Containerfile.backend
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
