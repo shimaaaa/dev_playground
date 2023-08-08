@@ -17,11 +17,6 @@ services:
             - ./backend:/app/backend
         ports:
             - "8000:8000"
-        environment:
-            db_user: user
-            db_pass: denkidb
-            db_host: db
-            db_name: denkidb
         working_dir: /app/backend
         command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 volumes:

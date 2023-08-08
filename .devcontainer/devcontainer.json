@@ -1,12 +1,7 @@
 {
-    "name": "dev-playground",
-    "dockerFile": "../ContainerFile.local",
-    "remoteEnv": {
-        "db_user": "user",
-        "db_pass": "db",
-        "db_host": "db",
-        "db_name": "dbname"
-	},
+	"name": "dev-playground",
+	"dockerFile": "../ContainerFile.local",
+	"remoteEnv": {},
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -18,13 +13,25 @@
 				"charliermarsh.ruff",
 				"ms-azuretools.vscode-docker",
 				"ms-python.black-formatter",
-				"ms-python.isort"
-			]
-		},
-		"settings": {
-			"[python]": {
-				"editor.defaultFormatter": "ms-python.black-formatter",
-				"editor.formatOnSave": true
+				"ms-python.isort",
+				"hashicorp.terraform",
+				"codezombiech.gitignore",
+				"github.vscode-github-actions"
+			],
+			"settings": {
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.black-formatter",
+					"editor.formatOnSave": true,
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": true,
+						"source.fixAll": true
+					}
+				},
+				"isort.args": [
+					"--profile",
+					"black"
+				],
+				"ruff.organizeImports": false
 			}
 		}
 	}
