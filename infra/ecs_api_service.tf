@@ -119,7 +119,6 @@ resource "aws_ecs_service" "api" {
   name            = "${local.app_name}-api"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.api.arn
-  launch_type     = "FARGATE"
   desired_count   = local.ecs_api_count
   network_configuration {
     subnets = [
@@ -135,5 +134,39 @@ resource "aws_ecs_service" "api" {
     target_group_arn = aws_lb_target_group.api_http.arn
     container_name   = "${local.app_name}-api"
     container_port   = 80
+  }
+  capacity_provider_strategy {
+    weight            = 0
+    capacity_provider = "FARGATE"
+  }
+  capacity_provider_strategy {
+    weight            = 1
+    capacity_provider = "FARGATE_SPOT"
+  }
+}
+
+resource "aws_appautoscaling_target" "as_target_api" {
+  service_namespace  = "ecs"
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.api.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  min_capacity       = 1
+  max_capacity       = 4
+}
+
+resource "aws_appautoscaling_policy" "as_policy_api" {
+  name               = "${local.app_name}-api-target-tracking"
+  service_namespace  = "ecs"
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.api.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  policy_type        = "TargetTrackingScaling"
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value       = 50
+    scale_out_cooldown = 300
+    scale_in_cooldown  = 300
   }
 }
