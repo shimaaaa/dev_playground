@@ -5,11 +5,6 @@ on:
 jobs:
   lint_and_test:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -24,7 +19,7 @@ jobs:
         with:
           context: .
           file: ./Containerfile.local
-          tags: localhost:5000/${{ github.repository }}:${{ github.ref_name }}
+          tags: ${{ github.repository_id }}:${{ github.ref_name }}
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -32,6 +27,6 @@ jobs:
       - name: Python test
         uses: addnab/docker-run-action@v3
         with:
-          image: localhost:5000/${{ github.repository }}:${{ github.ref_name }}
+          image: ${{ github.repository_id }}:${{ github.ref_name }}
           options: -v ${{ github.workspace }}:/app
           run: pytest --rootdir=/app/api
