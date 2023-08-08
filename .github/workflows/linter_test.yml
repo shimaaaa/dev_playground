@@ -21,3 +21,10 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Python test
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ github.repository }}:${{ github.ref_name }}
+          options: -v ${{ github.workspace }}:/app
+          run: pytest --rootdir=/app/api
