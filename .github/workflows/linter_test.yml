@@ -31,3 +31,10 @@ jobs:
           image: ${{ github.repository_id }}:${{ github.ref_name }}
           options: -v ${{ github.workspace }}:/app
           run: pytest --rootdir=/app/api
+
+      - name: Python lint
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ github.repository_id }}:${{ github.ref_name }}
+          options: -v ${{ github.workspace }}:/app
+          run: ruff check /app/api
