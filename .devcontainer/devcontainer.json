@@ -1,0 +1,31 @@
+{
+    "name": "dev-playground",
+    "dockerFile": "../ContainerFile.local",
+    "remoteEnv": {
+        "db_user": "user",
+        "db_pass": "db",
+        "db_host": "db",
+        "db_name": "dbname"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"vscodevim.vim",
+				"eamodio.gitlens",
+				"oderwat.indent-rainbow",
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"charliermarsh.ruff",
+				"ms-azuretools.vscode-docker",
+				"ms-python.black-formatter",
+				"ms-python.isort"
+			]
+		},
+		"settings": {
+			"[python]": {
+				"editor.defaultFormatter": "ms-python.black-formatter",
+				"editor.formatOnSave": true
+			}
+		}
+	}
+}

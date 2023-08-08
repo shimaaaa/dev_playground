@@ -1,0 +1,28 @@
+version: "3"
+services:
+    web:
+        container_name: web
+        image: nginx:alpine
+        depends_on:
+            - api
+        ports:
+            - "8080:80"
+        volumes:
+            - ./web/nginx/conf.d:/etc/nginx/conf.d
+    api:
+        build:
+            context: ./
+            dockerfile: Containerfile.backend
+        volumes:
+            - ./backend:/app/backend
+        ports:
+            - "8000:8000"
+        environment:
+            db_user: user
+            db_pass: denkidb
+            db_host: db
+            db_name: denkidb
+        working_dir: /app/backend
+        command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+volumes:
+    db-data:
