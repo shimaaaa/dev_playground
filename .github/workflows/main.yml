@@ -25,5 +25,5 @@ jobs:
           ECR_REPOSITORY: ${{ vars.AWS_ECR_REPO_NAME }}
         run: |
           IMAGE_TAG=$(echo ${{ github.ref_name }})
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Containerfile.backend
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
