@@ -10,6 +10,7 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - uses: actions/checkout@v2
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: 'ap-northeast-1'
