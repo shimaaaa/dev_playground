@@ -25,7 +25,7 @@ jobs:
           context: .
           file: ./Containerfile.local
           tags: localhost:5000/${{ github.repository }}:${{ github.ref_name }}
-          push: true
+          push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
