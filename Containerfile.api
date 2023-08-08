@@ -21,12 +21,11 @@ ENV PYTHONFAULTHANDLER=1 \
 
 RUN curl -sSL https://install.python-poetry.org/ | python -
 
-RUN mkdir -p /app/backend
+RUN mkdir -p /app/api
 COPY ./pyproject.toml /app/pyproject.toml
 COPY ./poetry.lock /app/poetry.lock
-COPY ./backend/ /app/backend/
-COPY ./backend/ /app/backend/
+COPY ./api/ /app/api/
 RUN poetry install --no-root --no-dev
 
-WORKDIR /app/backend
+WORKDIR /app/api
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

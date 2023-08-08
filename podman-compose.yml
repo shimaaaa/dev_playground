@@ -12,12 +12,12 @@ services:
     api:
         build:
             context: ./
-            dockerfile: Containerfile.backend
+            dockerfile: Containerfile.api
         volumes:
-            - ./backend:/app/backend
+            - ./api:/app/api
         ports:
             - "8000:8000"
-        working_dir: /app/backend
+        working_dir: /app/api
         command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 volumes:
     db-data:

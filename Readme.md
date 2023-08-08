@@ -1,10 +1,10 @@
 # dev_playground
 
-実開発のための実験アプリ
+開発のための実験アプリ
 
 - Frontend
     - TBD
-- Backend
+- API
     - Python,FastAPI
 - IaC
     - Terraform

@@ -1,7 +1,9 @@
 {
 	"name": "dev-playground",
 	"dockerFile": "../ContainerFile.local",
-	"remoteEnv": {},
+	"remoteEnv": {
+		"PYTHONPATH": "${containerWorkspaceFolder}/api"
+	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
