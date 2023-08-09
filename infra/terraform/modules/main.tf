@@ -6,9 +6,11 @@ locals {
 
 data "aws_ecr_repository" "api" {
   name = "${var.service_prefix}_app"
-
 }
 
+data "aws_ecr_repository" "web" {
+  name = "${var.service_prefix}_web"
+}
 
 data "aws_ecr_repository" "otel_collector" {
   name = "aws-otel-collector"

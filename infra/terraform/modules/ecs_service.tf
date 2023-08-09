@@ -10,14 +10,42 @@ resource "aws_ecs_task_definition" "api" {
   container_definitions = jsonencode(
     [
       {
+        "name" : "${local.app_name}-web",
+        "image" : "${data.aws_ecr_repository.web.repository_url}:${var.ecs_api_tag}",
+        "cpu" : 0,
+        "portMappings" : [
+          {
+            "name" : "${local.app_name}-web",
+            "containerPort" : 80,
+            "hostPort" : 80,
+            "protocol" : "tcp",
+            "appProtocol" : "http"
+          }
+        ],
+        "essential" : true,
+        "environment" : [],
+        "environmentFiles" : [],
+        "mountPoints" : [],
+        "volumesFrom" : [],
+        "logConfiguration" : {
+          "logDriver" : "awslogs",
+          "options" : {
+            "awslogs-create-group" : "true",
+            "awslogs-group" : "/ecs/${local.app_name}-web",
+            "awslogs-region" : "ap-northeast-1",
+            "awslogs-stream-prefix" : "ecs"
+          }
+        }
+      },
+      {
         "name" : "${local.app_name}-api",
         "image" : "${data.aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
         "cpu" : 0,
         "portMappings" : [
           {
             "name" : "${local.app_name}-api",
-            "containerPort" : 80,
-            "hostPort" : 80,
+            "containerPort" : 8080,
+            "hostPort" : 8080,
             "protocol" : "tcp",
             "appProtocol" : "http"
           }
@@ -180,8 +208,8 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_xray_policy_api" {
 }
 
 resource "aws_security_group" "ecs_service_api" {
-  name        = "${local.app_name}-api"
-  description = "${local.app_name}-api"
+  name        = "${local.app_name}-web"
+  description = "${local.app_name}-web"
   vpc_id      = aws_vpc.this.id
   ingress {
     from_port   = 80
@@ -198,12 +226,12 @@ resource "aws_security_group" "ecs_service_api" {
   }
 
   tags = {
-    Name = "${local.app_name}-api"
+    Name = "${local.app_name}-web"
   }
 }
 
-resource "aws_ecs_service" "api" {
-  name            = "${local.app_name}-api"
+resource "aws_ecs_service" "this" {
+  name            = local.app_name
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = var.ecs_api_count
@@ -219,7 +247,7 @@ resource "aws_ecs_service" "api" {
   }
   load_balancer {
     target_group_arn = aws_lb_target_group.api_http.arn
-    container_name   = "${local.app_name}-api"
+    container_name   = "${local.app_name}-web"
     container_port   = 80
   }
   capacity_provider_strategy {
@@ -234,16 +262,16 @@ resource "aws_ecs_service" "api" {
 
 resource "aws_appautoscaling_target" "as_target_api" {
   service_namespace  = "ecs"
-  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.api.name}"
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   min_capacity       = 1
   max_capacity       = 4
 }
 
 resource "aws_appautoscaling_policy" "as_policy_api" {
-  name               = "${local.app_name}-api-target-tracking"
+  name               = "${local.app_name}-target-tracking"
   service_namespace  = "ecs"
-  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.api.name}"
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   policy_type        = "TargetTrackingScaling"
 
