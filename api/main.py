@@ -4,8 +4,7 @@ import boto3
 import requests
 from fastapi import FastAPI
 from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
-    OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -15,7 +14,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 # Sends generated traces in the OTLP format to an ADOT Collector running on port 4317
 otlp_exporter = OTLPSpanExporter(
-    endpoint=os.environ.get("OTLP_EXPLORTER_ENDPOINT"), insecure=True
+    endpoint=os.environ.get("OTLP_EXPLORTER_ENDPOINT"),
+    insecure=True,
 )
 
 # Processes traces in batches as opposed to immediately one after the other
