@@ -10,6 +10,13 @@ packages = [{include = "dev_backend_example"}]
 python = "^3.11"
 fastapi = "^0.101.0"
 uvicorn = "^0.23.2"
+opentelemetry-instrumentation-fastapi = "^0.40b0"
+opentelemetry-instrumentation-botocore = "^0.40b0"
+opentelemetry-sdk-extension-aws = "^2.0.1"
+opentelemetry-exporter-otlp = "^1.19.0"
+opentelemetry-instrumentation-requests = "^0.40b0"
+botocore = "^1.31.22"
+boto3 = "^1.28.22"
 
 
 [tool.poetry.group.dev.dependencies]

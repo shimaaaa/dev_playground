@@ -1,0 +1,37 @@
+version: "3"
+services:
+    web:
+        container_name: web
+        image: nginx:alpine
+        depends_on:
+            - api
+        ports:
+            - "8080:80"
+        volumes:
+            - ./web/nginx/conf.d:/etc/nginx/conf.d
+    api:
+        build:
+            context: ./
+            dockerfile: Containerfile.api
+        volumes:
+            - ./api:/app/api
+            - ~/.aws:/root/.aws
+        ports:
+            - "8000:8000"
+        working_dir: /app/api
+        command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+        environment:
+            - OTLP_EXPLORTER_ENDPOINT=http://otel-collector:4317
+            - OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST="".*""
+            - OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE=".*"
+            - OTEL_SERVICE_NAME=playground-dev
+    otel-collector:
+        image: public.ecr.aws/aws-observability/aws-otel-collector:latest
+        command: [ "--config=/etc/otel-agent-config.yaml" ]
+        volumes:
+            - ./otel/otel-config.yaml:/etc/otel-agent-config.yaml
+            - ~/.aws:/root/.aws
+        ports:
+            - 4317:4317
+volumes:
+    db-data:
