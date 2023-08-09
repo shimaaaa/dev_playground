@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "api" {
   [
     {
         "name": "${local.app_name}-api",
-        "image": "${aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
+        "image": "${data.aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
         "cpu": 0,
         "portMappings": [
             {
@@ -22,7 +22,24 @@ resource "aws_ecs_task_definition" "api" {
             }
         ],
         "essential": true,
-        "environment": [],
+        "environment": [
+            {
+              "name": "OTLP_EXPLORTER_ENDPOINT",
+              "value": "udp://127.0.0.1:4317"
+            },
+            {
+              "name": "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST",
+              "value": ".*"
+            },
+            {
+              "name": "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE",
+              "value": ".*"
+            },
+            {
+              "name": "OTEL_SERVICE_NAME",
+              "value": "playground-${var.env}"
+            }
+        ],
         "environmentFiles": [],
         "mountPoints": [],
         "volumesFrom": [],
@@ -35,6 +52,19 @@ resource "aws_ecs_task_definition" "api" {
                 "awslogs-stream-prefix": "ecs"
             }
         }
+    },
+    {
+      "name": "otel-collector",
+      "image": "${data.aws_ecr_repository.otel_collector.repository_url}:latest",
+      "cpu": 32,
+      "memoryReservation": 256,
+      "portMappings" : [
+          {
+              "hostPort": 4317,
+              "containerPort": 4317,
+              "protocol": "udp"
+          }
+      ]
     }
   ]
   EOS
@@ -91,6 +121,11 @@ resource "aws_iam_policy" "ecs_task_execution_role_policy_api" {
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_api" {
   role       = aws_iam_role.ecs_task_execution_role_api.name
   policy_arn = aws_iam_policy.ecs_task_execution_role_policy_api.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_xray_policy_api" {
+  role       = aws_iam_role.ecs_task_execution_role_api.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
 resource "aws_security_group" "ecs_service_api" {
