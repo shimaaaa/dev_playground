@@ -3,7 +3,7 @@
 開発のための実験アプリ
 
 - Frontend
-    - TBD
+    - Vite + React + NextUI
 - API
     - Python,FastAPI
 - IaC
