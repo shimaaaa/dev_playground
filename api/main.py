@@ -12,6 +12,8 @@ from opentelemetry.sdk.extension.aws.trace import AwsXRayIdGenerator
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+from api.controllers.books import BookListResponse, BooksController
+
 app = FastAPI()
 
 # Sends generated traces in the OTLP format to an ADOT Collector running on port 4317
@@ -70,3 +72,9 @@ def otel_test() -> dict:
 @app.get("/api")
 def read_root() -> dict:
     return {"Hello": "World"}
+
+
+@app.get("/api/books")
+def get_books() -> BookListResponse:
+    controller = BooksController()
+    return controller.list()

@@ -18,7 +18,8 @@
 				"ms-python.isort",
 				"hashicorp.terraform",
 				"codezombiech.gitignore",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"esbenp.prettier-vscode"
 			],
 			"settings": {
 				"[python]": {
@@ -28,6 +29,11 @@
 						"source.organizeImports": true,
 						"source.fixAll": true
 					}
+				},
+				"[typescript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode",
+					"editor.formatOnSave": true,
+					"editor.tabSize": 2
 				},
 				"isort.args": [
 					"--profile",

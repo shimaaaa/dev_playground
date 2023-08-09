@@ -67,6 +67,10 @@ resource "aws_ecs_task_definition" "api" {
           {
             "name" : "OTEL_SERVICE_NAME",
             "value" : "playground-${var.env}"
+          },
+          {
+            "name" : "OTEL_PYTHON_EXCLUDED_URLS",
+            "value" : "ping"
           }
         ],
         "environmentFiles" : [],
