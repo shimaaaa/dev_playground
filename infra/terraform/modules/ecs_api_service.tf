@@ -5,6 +5,7 @@ resource "aws_ecs_task_definition" "api" {
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role_api.arn
   network_mode             = "awsvpc"
+  skip_destroy             = true
   container_definitions    = <<-EOS
   [
     {
