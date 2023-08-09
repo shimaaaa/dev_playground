@@ -30,14 +30,27 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push images
+      - name: Build and push images(api)
         uses: docker/build-push-action@v4
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO_NAME }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_API_REPO_NAME }}
         with:
           context: .
           file: ./Containerfile.api
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push images(web)
+        uses: docker/build-push-action@v4
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_WEB_REPO_NAME }}
+        with:
+          context: .
+          file: ./Containerfile.web
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}
           push: true
           cache-from: type=gha

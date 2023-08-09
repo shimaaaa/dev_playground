@@ -4,70 +4,80 @@ resource "aws_ecs_task_definition" "api" {
   memory                   = 1024
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role_api.arn
+  task_role_arn            = aws_iam_role.ecs_task_role_api.arn
   network_mode             = "awsvpc"
   skip_destroy             = true
-  container_definitions    = <<-EOS
-  [
-    {
-        "name": "${local.app_name}-api",
-        "image": "${data.aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
-        "cpu": 0,
-        "portMappings": [
-            {
-                "name": "${local.app_name}-api",
-                "containerPort": 80,
-                "hostPort": 80,
-                "protocol": "tcp",
-                "appProtocol": "http"
-            }
-        ],
-        "essential": true,
-        "environment": [
-            {
-              "name": "OTLP_EXPLORTER_ENDPOINT",
-              "value": "udp://127.0.0.1:4317"
-            },
-            {
-              "name": "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST",
-              "value": ".*"
-            },
-            {
-              "name": "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE",
-              "value": ".*"
-            },
-            {
-              "name": "OTEL_SERVICE_NAME",
-              "value": "playground-${var.env}"
-            }
-        ],
-        "environmentFiles": [],
-        "mountPoints": [],
-        "volumesFrom": [],
-        "logConfiguration": {
-            "logDriver": "awslogs",
-            "options": {
-                "awslogs-create-group": "true",
-                "awslogs-group": "/ecs/${local.app_name}-api",
-                "awslogs-region": "ap-northeast-1",
-                "awslogs-stream-prefix": "ecs"
-            }
-        }
-    },
-    {
-      "name": "otel-collector",
-      "image": "${data.aws_ecr_repository.otel_collector.repository_url}:latest",
-      "cpu": 32,
-      "memoryReservation": 256,
-      "portMappings" : [
+  container_definitions = jsonencode(
+    [
+      {
+        "name" : "${local.app_name}-api",
+        "image" : "${data.aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
+        "cpu" : 0,
+        "portMappings" : [
           {
-              "hostPort": 4317,
-              "containerPort": 4317,
-              "protocol": "udp"
+            "name" : "${local.app_name}-api",
+            "containerPort" : 80,
+            "hostPort" : 80,
+            "protocol" : "tcp",
+            "appProtocol" : "http"
           }
-      ]
-    }
-  ]
-  EOS
+        ],
+        "essential" : true,
+        "environment" : [
+          {
+            "name" : "OTLP_EXPLORTER_ENDPOINT",
+            "value" : "udp://127.0.0.1:4317"
+          },
+          {
+            "name" : "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST",
+            "value" : ".*"
+          },
+          {
+            "name" : "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE",
+            "value" : ".*"
+          },
+          {
+            "name" : "OTEL_SERVICE_NAME",
+            "value" : "playground-${var.env}"
+          }
+        ],
+        "environmentFiles" : [],
+        "mountPoints" : [],
+        "volumesFrom" : [],
+        "logConfiguration" : {
+          "logDriver" : "awslogs",
+          "options" : {
+            "awslogs-create-group" : "true",
+            "awslogs-group" : "/ecs/${local.app_name}-api",
+            "awslogs-region" : "ap-northeast-1",
+            "awslogs-stream-prefix" : "ecs"
+          }
+        }
+      },
+      {
+        "name" : "otel-collector",
+        "image" : "${data.aws_ecr_repository.otel_collector.repository_url}:latest",
+        "cpu" : 32,
+        "memoryReservation" : 256,
+        "portMappings" : [
+          {
+            "hostPort" : 4317,
+            "containerPort" : 4317,
+            "protocol" : "udp"
+          }
+        ],
+        "logConfiguration" : {
+          "logDriver" : "awslogs",
+          "options" : {
+            "awslogs-create-group" : "true",
+            "awslogs-group" : "/ecs/${local.app_name}-api-otel",
+            "awslogs-region" : "ap-northeast-1",
+            "awslogs-stream-prefix" : "ecs"
+          }
+        }
+      }
+    ]
+  )
   runtime_platform {
     cpu_architecture        = "X86_64"
     operating_system_family = "LINUX"
@@ -77,45 +87,45 @@ resource "aws_ecs_task_definition" "api" {
 resource "aws_iam_role" "ecs_task_execution_role_api" {
   name = "${local.app_name}-api-task-execution-role"
 
-  assume_role_policy = <<-EOS
-  {
-    "Version": "2008-10-17",
-    "Statement": [
+  assume_role_policy = jsonencode(
+    {
+      "Version" : "2008-10-17",
+      "Statement" : [
         {
-            "Sid": "",
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "ecs-tasks.amazonaws.com"
-            },
-            "Action": "sts:AssumeRole"
+          "Sid" : "",
+          "Effect" : "Allow",
+          "Principal" : {
+            "Service" : "ecs-tasks.amazonaws.com"
+          },
+          "Action" : "sts:AssumeRole"
         }
-    ]
-  }
-  EOS
+      ]
+    }
+  )
 }
 
 resource "aws_iam_policy" "ecs_task_execution_role_policy_api" {
-  name   = "${local.app_name}-api-ecs-task-execution-role-policy"
-  policy = <<-EOS
-  {
-    "Version": "2012-10-17",
-    "Statement": [
+  name = "${local.app_name}-api-ecs-task-execution-role-policy"
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
         {
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetAuthorizationToken",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents",
-                "logs:CreateLogGroup"
-            ],
-            "Resource": "*"
+          "Effect" : "Allow",
+          "Action" : [
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:CreateLogGroup"
+          ],
+          "Resource" : "*"
         }
-    ]
-  }
-  EOS
+      ]
+    }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_api" {
@@ -123,8 +133,49 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_api" {
   policy_arn = aws_iam_policy.ecs_task_execution_role_policy_api.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_xray_policy_api" {
-  role       = aws_iam_role.ecs_task_execution_role_api.name
+resource "aws_iam_role" "ecs_task_role_api" {
+  name = "${local.app_name}-api-task-role"
+
+  assume_role_policy = jsonencode(
+    {
+      "Version" : "2008-10-17",
+      "Statement" : [
+        {
+          "Sid" : "",
+          "Effect" : "Allow",
+          "Principal" : {
+            "Service" : "ecs-tasks.amazonaws.com"
+          },
+          "Action" : "sts:AssumeRole"
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_policy" "ecs_task_role_policy_api" {
+  name = "${local.app_name}-api-ecs-task-role-policy"
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : "s3:ListAllMyBuckets",
+          "Resource" : "arn:aws:s3:::*"
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_api" {
+  role       = aws_iam_role.ecs_task_role_api.name
+  policy_arn = aws_iam_policy.ecs_task_role_policy_api.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_role_xray_policy_api" {
+  role       = aws_iam_role.ecs_task_role_api.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 

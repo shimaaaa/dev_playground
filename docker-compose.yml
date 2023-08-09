@@ -1,14 +1,14 @@
 version: "3"
 services:
     web:
-        container_name: web
-        image: nginx:alpine
-        depends_on:
-            - api
+        build:
+            context: ./
+            dockerfile: Containerfile.web
         ports:
             - "8080:80"
         volumes:
             - ./web/nginx/conf.d:/etc/nginx/conf.d
+            - ./frontend/dist:/usr/share/nginx/html
     api:
         build:
             context: ./
@@ -24,6 +24,7 @@ services:
             - OTLP_EXPLORTER_ENDPOINT=udp://otel-collector:4317
             - OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST="".*""
             - OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE=".*"
+            - OTEL_PYTHON_EXCLUDED_URLS="ping"
             - OTEL_SERVICE_NAME=playground-dev
     otel-collector:
         build:

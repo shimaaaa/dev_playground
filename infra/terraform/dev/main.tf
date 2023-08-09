@@ -43,6 +43,6 @@ module "dev" {
       az   = "ap-northeast-1d"
     },
   }
-  ecs_api_tag   = "v0.0.2"
+  ecs_api_tag   = "main"
   ecs_api_count = 1
 }
