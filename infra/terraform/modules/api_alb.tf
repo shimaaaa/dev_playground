@@ -38,7 +38,7 @@ resource "aws_lb" "api" {
     aws_security_group.api_alb.id
   ]
   subnets = [
-    for k, v in local.public_subnets :
+    for k, v in var.public_subnets :
     aws_subnet.public[k].id
   ]
 }

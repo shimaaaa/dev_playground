@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "api" {
-  name                 = "${local.prefix}_app"
+  name                 = "${var.service_prefix}_app"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {

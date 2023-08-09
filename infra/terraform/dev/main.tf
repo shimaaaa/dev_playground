@@ -13,10 +13,10 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-locals {
-  prefix   = "playground"
-  env      = "dev"
-  app_name = "${local.prefix}-${local.env}"
+module "dev" {
+  source         = "../modules"
+  service_prefix = "playground"
+  env            = "dev"
 
   vpc_cidr = "10.1.0.0/16"
   public_subnets = {

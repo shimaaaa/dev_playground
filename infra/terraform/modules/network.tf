@@ -1,5 +1,5 @@
 resource "aws_vpc" "this" {
-  cidr_block = local.vpc_cidr
+  cidr_block = var.vpc_cidr
   tags = {
     Name = local.app_name
   }
@@ -17,7 +17,7 @@ resource "aws_s3_bucket" "flowlog" {
 }
 
 resource "aws_subnet" "private" {
-  for_each = local.private_subnets
+  for_each = var.private_subnets
 
   vpc_id = aws_vpc.this.id
 
@@ -30,7 +30,7 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_subnet" "public" {
-  for_each = local.public_subnets
+  for_each = var.public_subnets
 
   vpc_id = aws_vpc.this.id
 
@@ -51,7 +51,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 resource "aws_route_table" "private" {
-  for_each = local.private_subnets
+  for_each = var.private_subnets
   vpc_id   = aws_vpc.this.id
 
   tags = {
@@ -60,7 +60,7 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table" "public" {
-  for_each = local.public_subnets
+  for_each = var.public_subnets
   vpc_id   = aws_vpc.this.id
 
   tags = {
@@ -69,21 +69,21 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "private" {
-  for_each = local.private_subnets
+  for_each = var.private_subnets
 
   subnet_id      = aws_subnet.private[each.key].id
   route_table_id = aws_route_table.private[each.key].id
 }
 
 resource "aws_route_table_association" "public" {
-  for_each = local.public_subnets
+  for_each = var.public_subnets
 
   subnet_id      = aws_subnet.public[each.key].id
   route_table_id = aws_route_table.public[each.key].id
 }
 
 resource "aws_route" "igw" {
-  for_each               = local.public_subnets
+  for_each               = var.public_subnets
   route_table_id         = aws_route_table.public[each.key].id
   gateway_id             = aws_internet_gateway.this.id
   destination_cidr_block = "0.0.0.0/0"

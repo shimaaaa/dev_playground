@@ -9,7 +9,7 @@ resource "aws_ecs_task_definition" "api" {
   [
     {
         "name": "${local.app_name}-api",
-        "image": "${aws_ecr_repository.api.repository_url}:${local.ecs_api_tag}",
+        "image": "${aws_ecr_repository.api.repository_url}:${var.ecs_api_tag}",
         "cpu": 0,
         "portMappings": [
             {
@@ -119,10 +119,10 @@ resource "aws_ecs_service" "api" {
   name            = "${local.app_name}-api"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = local.ecs_api_count
+  desired_count   = var.ecs_api_count
   network_configuration {
     subnets = [
-      for k, v in local.public_subnets :
+      for k, v in var.public_subnets :
       aws_subnet.public[k].id
     ]
     security_groups = [
