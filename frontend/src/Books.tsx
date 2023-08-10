@@ -36,7 +36,9 @@ export function BookList() {
 
   const fetchBooks = useCallback(async () => {
     try {
-      const books = ApiClient.listBooks();
+      const jwtToken = (await Auth.currentSession()).getIdToken().getJwtToken();
+      const apiClient = new ApiClient({ authToken: jwtToken });
+      const books = apiClient.listBooks();
       setBooks(await books);
     } catch (e) {
       if (isError(e)) {
