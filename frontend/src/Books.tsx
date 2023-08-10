@@ -1,12 +1,35 @@
 import { ApiClient } from './api'
-import { Book } from './models/book';
+import { Book }  from './models/book';
 import { useCallback, useEffect, useState } from "react";
+import {Card, CardHeader, CardBody, Image} from "@nextui-org/react";
+
 
 const isError = (error: unknown): error is Error => {
   return error instanceof Error;
 };
 
-export function Books() {
+function BookItem(props: { book: Book }) {
+  const book = props.book;
+  return (
+    <Card className="py-4 max-w-[400px]">
+      <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+        <h4 className="font-bold text-large text-center">{ book.name }</h4>
+        <small className="text-default-500 text-right">¥{ book.unitYen }</small>
+      </CardHeader>
+      <CardBody className="overflow-visible py-2">
+        <Image
+          alt="book image"
+          className="object-cover rounded-xl"
+          src={book.imageSrc}
+          width={270}
+        />
+      </CardBody>
+    </Card>
+  );
+  // return <li key={props.book.isbn10}>{props.book.name}</li>
+}
+
+export function BookList() {
   const [books, setBooks] = useState<Book[]>([]);
   const [error, setError] = useState<Error | undefined>(undefined);
 
@@ -28,11 +51,10 @@ export function Books() {
   if (error) {
     return <div>{error.message}</div>;
   }
+  const bookItems = books.map(book => <BookItem book={book}/>);
   return (
-    <div>
-      {books.map((book) => (
-        <li key={book.isbn10}>{book.name}</li>
-      ))}
+    <div className='grid grid-cols-1 gap-4'>
+      {bookItems}
     </div>
   );
 }

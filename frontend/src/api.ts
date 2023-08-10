@@ -11,13 +11,13 @@ export class ApiClient {
 
   static async listBooks(): Promise<Array<Book>> {
     const client = ApiClient.getClient();
-    const response = client.getBooksApiBooksGet();
-    return (await response).books.map((x) => {
+    const response = await client.getBooksApiBooksGet();
+    return response.books.map((x) => {
       return new Book({
-        isbn10: x.isbn10,
+        isbn10: x.isbn_10,
         name: x.name,
-        unitYen: x.unitYen,
-        imageSrc: x.imageSrc,
+        unitYen: x.unit_yen,
+        imageSrc: x.image_src,
       });
     });
   }
