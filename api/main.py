@@ -2,7 +2,8 @@ import os
 
 import boto3
 import requests
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.security import HTTPAuthorizationCredentials
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
@@ -12,6 +13,7 @@ from opentelemetry.sdk.extension.aws.trace import AwsXRayIdGenerator
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+from api.auth import JWTBearer
 from api.controllers.books import BookListResponse, BooksController
 
 app = FastAPI()
@@ -75,6 +77,9 @@ def read_root() -> dict:
 
 
 @app.get("/api/books")
-def get_books() -> BookListResponse:
+def get_books(
+    credential: HTTPAuthorizationCredentials = Depends(JWTBearer()),  # noqa: B008
+) -> BookListResponse:
+    print(credential)
     controller = BooksController()
     return controller.list()

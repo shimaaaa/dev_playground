@@ -2,7 +2,7 @@ import { ApiClient } from './api'
 import { Book }  from './models/book';
 import { useCallback, useEffect, useState } from "react";
 import {Card, CardHeader, CardBody, Image} from "@nextui-org/react";
-
+import { Auth } from 'aws-amplify';
 
 const isError = (error: unknown): error is Error => {
   return error instanceof Error;
@@ -10,6 +10,7 @@ const isError = (error: unknown): error is Error => {
 
 function BookItem(props: { book: Book }) {
   const book = props.book;
+  Auth.currentSession().then(console.log);
   return (
     <Card className="py-4 max-w-[400px]">
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
@@ -53,8 +54,13 @@ export function BookList() {
   }
   const bookItems = books.map(book => <BookItem book={book}/>);
   return (
-    <div className='grid grid-cols-1 gap-4'>
-      {bookItems}
-    </div>
+    <>
+      <h1 className="text-3xl font-bold underline">
+        Books
+      </h1>
+      <div className='grid grid-cols-1 gap-4'>
+        {bookItems}
+      </div>
+    </>
   );
 }
