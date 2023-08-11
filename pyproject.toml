@@ -35,7 +35,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 select = ["ALL"]
-ignore = ["I", "D", "ANN101", "A003"]
+ignore = ["I", "D", "ANN101", "A003", "TD002", "TD003", "FIX002"]
 target-version = "py311"
 line-length = 120
 exclude = [".venv", "test_*.py"]

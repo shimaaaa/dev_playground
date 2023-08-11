@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Any
 
 import requests
@@ -7,10 +8,11 @@ from fastapi.security import HTTPBearer
 from jose import jwk, jwt
 from jose.backends.base import Key
 from jose.exceptions import JWKError, JWTError
-from jose.utils import base64url_decode
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from starlette.status import HTTP_403_FORBIDDEN
+
+logger = getLogger(__name__)
 
 JWK = dict[str, str]
 
@@ -46,6 +48,8 @@ class JWTAuthorizationCredentials(BaseModel):
 
 class JWKSetting(BaseSettings):
     jwks_url: str
+    jwt_issuer: str
+    oidc_client_id: str
 
 
 class JWTBearer(HTTPBearer):
@@ -56,6 +60,8 @@ class JWTBearer(HTTPBearer):
         self.scheme_name = self.__class__.__name__
         self.auto_error = True
         setting = JWKSetting()
+        self.jwt_issuer = setting.jwt_issuer
+        self.oidc_client_id = setting.oidc_client_id
         jwks = JWKS.model_validate(
             requests.get(setting.jwks_url, timeout=30).json(),
         )
@@ -68,13 +74,25 @@ class JWTBearer(HTTPBearer):
             msg = "get jwk key"
             raise JWKError(msg) from e
 
-    def _verify_jwk_token(self, jwt_credentials: JWTAuthorizationCredentials) -> bool:
+    def _verify_jwk_token(
+        self,
+        token: str,
+        jwt_credentials: JWTAuthorizationCredentials,
+    ) -> bool:
         kid = jwt_credentials.header_kid
         key = self._get_key(kid=kid)
-
-        decoded_signature = base64url_decode(jwt_credentials.signature.encode())
-
-        return key.verify(jwt_credentials.message.encode(), decoded_signature)
+        try:
+            jwt.decode(
+                token=token,
+                key=key,
+                issuer=self.jwt_issuer,
+                audience=self.oidc_client_id,
+            )
+        except JWTError as e:
+            logger.warning(e)
+            return False
+        else:
+            return True
 
     async def __call__(
         self,
@@ -96,7 +114,7 @@ class JWTBearer(HTTPBearer):
                 status_code=HTTP_403_FORBIDDEN,
                 detail="invalid token",
             ) from exc
-        if not self._verify_jwk_token(jwt_credentials):
+        if not self._verify_jwk_token(token=jwt_token, jwt_credentials=jwt_credentials):
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="invalid token")
 
         return User(
