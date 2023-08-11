@@ -79,6 +79,6 @@ def read_root() -> dict:
 def get_books(
     user: User = Depends(JWTBearer()),  # noqa: B008
 ) -> BookListResponse:
-    print(user)
+    print(user)  # noqa: T201
     controller = BooksController()
     return controller.list()
